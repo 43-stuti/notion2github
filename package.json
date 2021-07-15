@@ -1,0 +1,15 @@
+{
+  "name": "notion-example",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "@notionhq/client": "^0.1.9",
+    "@octokit/core": "^3.5.1",
+    "@octokit/rest": "^18.6.7",
+    "axios": "^0.21.1",
+    "cron": "^1.8.2",
+    "octokat": "^0.10.0"
+  }
+}
