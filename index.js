@@ -1,6 +1,7 @@
 import pkg1 from '@notionhq/client';
 import * as https from 'https';
 import axios from 'axios';
+import * as cron from 'node-cron'
 const { Client } = pkg1;
 let notion;
 let octokit;
@@ -131,4 +132,7 @@ async function onStart() {
         }
     })
 }
-onStart()
+cron.schedule('3 8 * * *',() => {
+    console.log('Crin running');
+    onStart()
+})

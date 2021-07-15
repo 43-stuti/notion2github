@@ -4,8 +4,9 @@ import axios from 'axios';
 const { Client } = pkg1;
 import pkg2 from '@octokit/core';
 const { Octokit } = pkg2;
-const notion = new Client({ auth: "secret_zTIkspNlfOUQYHnRirfN40kPaEvrjZzBiY0d6GhFK84" })
-const octokit = new Octokit({ auth: "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" });
+let notion;
+let octokit;
+let octokit2;
 async function getPageUpdates() {
     let response = await notion.search({
         query:'Chapters'
@@ -130,4 +131,18 @@ async function getBlockContent(id,name) {
     }
 
 }
-getPageUpdates();
+async function onStart() {
+    fs.readFile('creds.json',async(err,content) => {
+        if(err) {
+            console.log('error reading file',err);
+        } else {
+            console.log('keys');
+            let keys = JSON.parse(content)
+            notion = new Client({ auth: keys.notion })
+            octokit = new Octokat({ auth: keys.github });
+            octokit2 = new Octokit({ auth: keys.github });
+            getPageUpdates();
+        }
+    })
+}
+onStart();
