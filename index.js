@@ -17,17 +17,16 @@ async function getPageUpdates() {
     repo = await octokit.repos('43-stuti', 'escape-server').fetch();
     main = await repo.git.refs('heads/master').fetch();
     let response = await notion.search({
-        query:'Chapters'
+        query:'GSOC'
     })
     if(response.results && response.results.length) {
         let blockId = response.results[0].id;
-        await getBlockContent(blockId,'Chapters')
+        await getBlockContent(blockId,'GSOC')
         let tree = await octokit2.rest.git.createTree({
             tree: treeItems,
             owner:'43-stuti',
             repo:'escape-server'
         });
-        console.log('TREE',tree)
         let commit = await octokit2.rest.git.createCommit({
                         owner:'43-stuti',
                         repo:'escape-server',
@@ -41,7 +40,6 @@ async function getPageUpdates() {
             ref:'heads/master',
             sha:commit.data.sha
         });
-        console.log('update',update);
     }
     
 }
@@ -57,14 +55,9 @@ async function getBlockContent(id,name) {
                 await getBlockContent(obj.id,obj[obj.type].title);
             } else {
                 if(obj[obj.type] && obj[obj.type] && obj[obj.type].text) {
-                    //console.log('EVER HERE',obj[obj.type].text,obj.type)
                     for(let i=0;i<obj[obj.type].text.length;i++) {
                         let text = obj[obj.type].text[i];
-                        //console.log(text['plain_text']);
-                        //console.log('OBJ',obj.type)
-                        
                         if(obj[obj.type].text[i]['href']) {
-                            //console.log('LINK',obj[obj.type].text[i]['href']);
                             string = string + '[' + obj[obj.type].text[i]['plain_text'] + ']';
                             string = string + '(' + obj[obj.type].text[i]['href'] + ')' + '\n';
                         } else {
@@ -96,8 +89,6 @@ async function getBlockContent(id,name) {
                 }
             }
         }
-        console.log('STRING',name);
-        //let content = Buffer.from(string).toString('base64');
         let markdownFile = await octokit2.rest.git.createBlob({
             owner:'43-stuti',
             repo:'escape-server',
@@ -106,7 +97,7 @@ async function getBlockContent(id,name) {
         
         
         //repo.git.blobs.create({ content: Buffer.from(string).toString('base64') });
-        console.log('markdownFile',markdownFile.data.sha)
+        //console.log('markdownFile',markdownFile.data.sha)
         treeItems.push({
             path: name+'new'+'.md',
             sha: markdownFile.data.sha,
@@ -123,7 +114,6 @@ async function onStart() {
         if(err) {
             console.log('error reading file',err);
         } else {
-            console.log('keys');
             let keys = JSON.parse(content)
             notion = new Client({ auth: keys.notion })
             octokit = new Octokat({ auth: keys.github });
@@ -132,7 +122,4 @@ async function onStart() {
         }
     })
 }
-cron.schedule('3 8 * * *',() => {
-    console.log('Crin running');
-    onStart()
-})
+onStart()
