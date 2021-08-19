@@ -4,13 +4,22 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "scripts": {
+    "build": "ncc build index.js -o dist"
+  },
   "dependencies": {
+    "@actions/core": "^1.4.0",
+    "@actions/github": "^5.0.0",
     "@notionhq/client": "^0.1.9",
     "@octokit/core": "^3.5.1",
     "@octokit/rest": "^18.6.7",
     "axios": "^0.21.1",
     "cron": "^1.8.2",
     "node-cron": "^3.0.0",
-    "octokat": "^0.10.0"
+    "octokat": "^0.10.0",
+    "yarn": "^1.22.11"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.29.1"
   }
 }

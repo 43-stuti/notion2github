@@ -1,0 +1,12 @@
+name: 'Notion to Github'
+description: 'Convert notion content to markdown and commit to github'
+inputs:
+  TOKEN_NOTION:
+    description: 'Notion token'
+    required: true
+  TOKEN_GITHUB:
+    description: 'Github token'
+    required: true
+runs:
+  using: 'node12'
+  main: 'dist/index.js'

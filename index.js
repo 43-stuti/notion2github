@@ -17,10 +17,9 @@ let treeItems = [];
 let treeItemsImg = [];
 let fileNames = [];
 let imageUrls = [];
-let contentArray = []
+let contentArray = [];
+
 async function getPageUpdates() {
-    repo = await octokit.repos('43-stuti', 'escape-server').fetch();
-    main = await repo.git.refs('heads/docs').fetch();
     let response = await notion.search({
         query:'what'
     });
@@ -82,6 +81,9 @@ async function getBlockContent(id,name) {
                 }
                 if(obj.type == 'unsupported') {
                     if(obj.image && obj.image.url) {
+                        string = string + '[]';
+                        string = string + '(' + obj.image.url + ')' + '\n';
+                        console.log('MADE STRING')
                         imageUrls.push({
                             base:name,
                             url:obj.image.url
@@ -102,14 +104,14 @@ async function getBlockContent(id,name) {
 async function updateDoc() {
     let addtotree = async(obj) => {
         fileNames.push(obj.base+'.md')
-        await prepareTree(Buffer.from(obj.string).toString('base64'),'public/'+obj.base+'.md',treeItems);
+        await prepareTree(Buffer.from(obj.string).toString('base64'),'content_script/'+obj.base+'.md',treeItems);
     }
     let promiseArr = []
     for (let i = 0; i < contentArray.length; i++) {
         promiseArr.push(addtotree(contentArray[i]));
       }
     await Promise.all(promiseArr);
-    await updateRef(treeItems,'Notion doc update','docs','public',fileNames)
+    await updateRef(treeItems,'Notion doc update','docs','content_script',fileNames)
 }
 async function updateImages() {
     let deleteFiles = [];
@@ -121,7 +123,7 @@ async function updateImages() {
         .then(async response => {
             console.log('get response');
             deleteFiles.push(img.base+'_'+i+'.png')
-            await prepareTree(Buffer.from(response.data, 'binary').toString('base64'),'img/'+img.base+'_'+i+'.png',treeItemsImg);
+            await prepareTree(Buffer.from(response.data, 'binary').toString('base64'),'images_script/'+img.base+'_'+i+'.png',treeItemsImg);
             return true;
         })
         .catch(err => {
@@ -134,14 +136,14 @@ async function updateImages() {
         promiseArr.push(getImg(imageUrls[i],i));
       }
     await Promise.all(promiseArr);
-    await updateRef(treeItemsImg,'Notion img update','imgs','img',deleteFiles);
+    await updateRef(treeItemsImg,'Notion img update','imgs','images_script',deleteFiles);
 }
 
 //github utils
 async function prepareTree(content,path,array) {
     let blob = await octokit2.rest.git.createBlob({
-        owner:'43-stuti',
-        repo:'escape-server',
+        owner:'luisaph',
+        repo:'the-code-of-music',
         content:content,
         encoding:'base64'
       });
@@ -157,17 +159,19 @@ async function updateRef(treeContent,message,branch,path,deleteArray) {
     let deleteFunc = async (filename) => {
         let filepath = path+"/"+filename;
         console.log('file',filepath);
-        return axios.get("https://api.github.com/repos/43-stuti/escape-server/contents/"+filepath,{})
+        return axios.get("https://api.github.com/repos/luisaph/the-code-of-music/contents/content_script/what.md",{})
         .then(async(response) => {
+            
             if(response.data.sha) {
-                let del = await octokit2.rest.repos.deleteFile({
-                    owner: '43-stuti',
-                    repo: 'escape-server',
+                console.log('response')
+                /*let del = await octokit2.rest.repos.deleteFile({
+                    owner: 'luisaph',
+                    repo: 'the-code-of-music',
                     path:path+'/'+filename,
                     message:'delete files',
                     sha:response.data.sha,
                 });
-                console.log('delete')
+                console.log('delete')*/
                 return true
             }
             return true
@@ -181,18 +185,18 @@ async function updateRef(treeContent,message,branch,path,deleteArray) {
 
     let tree = await octokit2.rest.git.createTree({
         tree: treeContent,
-        owner:'43-stuti',
-        repo:'escape-server'
+        owner:'luisaph',
+        repo:'the-code-of-music'
     });
     let commit = await octokit2.rest.git.createCommit({
-                    owner:'43-stuti',
-                    repo:'escape-server',
+                    owner:'luisaph',
+                    repo:'the-code-of-music',
                     tree:tree.data.sha,
                     message:message
                 })          
     let update = await octokit2.rest.git.updateRef({
-        owner:'43-stuti',
-        repo:'escape-server',
+        owner:'luisaph',
+        repo:'the-code-of-music',
         ref:'heads/'+branch,
         path:path,
         sha:commit.data.sha,
@@ -204,8 +208,8 @@ async function updateRef(treeContent,message,branch,path,deleteArray) {
       }
     await Promise.all(promises);
     let merge = octokit2.rest.repos.merge({
-                owner:'43-stuti',
-                repo:'escape-server',
+                owner:'luisaph',
+                repo:'the-code-of-music',
                 base:'master',
                 head:branch,
             });
