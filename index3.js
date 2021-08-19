@@ -1,13 +1,15 @@
-const pkg1 = require('@notionhq/client');
-const axios =  require('axios');
-const pkg2 = require('@octokit/rest');
-const fs = require('fs')
+import pkg1 from '@notionhq/client';
+import * as https from 'https';
+import axios from 'axios';
+import * as cron from 'node-cron'
 const { Client } = pkg1;
-const { Octokit } = pkg2;
-
 let notion;
+let octokit;
 let octokit2;
-
+import Octokat from 'octokat';
+import pkg2 from '@octokit/rest';
+import * as fs from 'fs';
+const { Octokit } = pkg2;
 const owner = 'stuti-43'
 let repo;
 let main;
@@ -16,6 +18,7 @@ let treeItemsImg = [];
 let fileNames = [];
 let imageUrls = [];
 let contentArray = [];
+
 async function getPageUpdates() {
     let response = await notion.search({
         query:'what'
@@ -219,6 +222,7 @@ async function onStart() {
         } else {
             let keys = JSON.parse(content)
             notion = new Client({ auth: keys.notion })
+            octokit = new Octokat({ auth: keys.github });
             octokit2 = new Octokit({ auth: keys.github });
             getPageUpdates();
         }
